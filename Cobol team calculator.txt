@@ -1,0 +1,509 @@
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. BESTTEAM.
+
+       ENVIRONMENT DIVISION.
+      *=====================
+
+       CONFIGURATION SECTION.
+      *----------------------
+
+       INPUT-OUTPUT SECTION.
+      *---------------------
+
+       FILE-CONTROL.
+      *-------------
+
+           SELECT OUTPUT-FILE ASSIGN TO OUTFILE
+                  FILE STATUS IS WS-FILE-STATUS-INDICATOR.
+
+       DATA DIVISION.
+      *==============
+
+       FILE SECTION.
+      *-------------
+
+       FD  OUTPUT-FILE
+           BLOCK CONTAINS 0 RECORDS
+           LABEL RECORDS ARE STANDARD
+           RECORDING MODE IS F.
+
+       01 OUT-RECORD.
+          05 OUT-HERO-1-NAME             PIC X(15).
+          05 FILLER                      PIC X(01).
+          05 OUT-HERO-2-NAME             PIC X(15).
+          05 FILLER                      PIC X(01).
+          05 OUT-HERO-3-NAME             PIC X(15).
+          05 FILLER                      PIC X(01).
+          05 OUT-HERO-4-NAME             PIC X(15).
+          05 FILLER                      PIC X(01).
+          05 OUT-TEAM-STR-BONUS          PIC X(02).
+          05 FILLER                      PIC X(01).
+          05 OUT-TEAM-DUR-BONUS          PIC X(02).
+          05 FILLER                      PIC X(01).
+          05 OUT-TEAM-MAS-BONUS          PIC X(02).
+          05 FILLER                      PIC X(01).
+          05 OUT-TEAM-RES-BONUS          PIC X(02).
+          05 FILLER                      PIC X(01).
+          05 OUT-TEAM-VIT-BONUS          PIC X(02).
+          05 FILLER                      PIC X(01).
+          05 OUT-TEAM-ENE-BONUS          PIC X(02).
+          05 FILLER                      PIC X(01).
+          05 OUT-TEAM-TOTAL-BONUS        PIC X(02).
+
+       WORKING-STORAGE SECTION.
+      *------------------------
+
+       01 WS-WORKING-STORAGE.
+          05 WS-TOTAL-LOOPS                   PIC 9(10).
+          05 WS-IDX1                          PIC 9(04).
+          05 WS-IDX2                          PIC 9(04).
+          05 WS-IDX3                          PIC 9(04).
+          05 WS-IDX4                          PIC 9(04).
+          05 WS-HERO-IDX                      PIC 9(04).
+          05 WS-HERO-BONUS-IDX                PIC 9(04).
+          05 WS-TEAM-IDX                      PIC 9(04).
+
+          05 WS-FILE-STATUS-INDICATOR         PIC 9(02).
+             88 WS-FILE-STATUS-OK              VALUE ZERO.
+
+          05 WS-TEAM-COMPOSITION.
+             10 WS-TEAM-HERO                  PIC 9(02) OCCURS 4.
+             10 WS-TEAM-BONUS-PAIRS OCCURS 33 TIMES.
+                15 WS-TEAM-BONUS-PAIR-COUNT   PIC 9(01).
+                   88 WS-TEAM-BONUS-2-PAIR     VALUE 2.
+                   88 WS-TEAM-BONUS-3-PAIR     VALUE 3.
+                   88 WS-TEAM-BONUS-4-PAIR     VALUE 4.
+             10 WS-TEAM-STR-BONUS             PIC 9(02).
+             10 WS-TEAM-DUR-BONUS             PIC 9(02).
+             10 WS-TEAM-MAS-BONUS             PIC 9(02).
+             10 WS-TEAM-RES-BONUS             PIC 9(02).
+             10 WS-TEAM-VIT-BONUS             PIC 9(02).
+             10 WS-TEAM-ENE-BONUS             PIC 9(02).
+             10 WS-TEAM-TOTAL-BONUS           PIC 9(02).
+
+       01 WS-METADATA.
+          05 WS-TEAM-BONUS-METADATA.
+             10 FILLER                            PIC X(39) VALUE
+                '01 NEW AVENGERS            DUR 02 04 07'.
+             10 FILLER                            PIC X(39) VALUE
+                '02 GUARDIANS OF THE GALAXY RES 02 04 08'.
+             10 FILLER                            PIC X(39) VALUE
+                '03 FEMELE FATALES          MAS 02 04 08'.
+             10 FILLER                            PIC X(39) VALUE
+                '04 AGENTS OF SHIELD        VIT 02 04 07'.
+             10 FILLER                            PIC X(39) VALUE
+                '05 X-MEN                   STR 02 04 07'.
+             10 FILLER                            PIC X(39) VALUE
+                '06 VILLAINS                VIT 02 04 08'.
+             10 FILLER                            PIC X(39) VALUE
+                '07 DEFENDERS               DUR 02 04 07'.
+             10 FILLER                            PIC X(39) VALUE
+                '08 ANTI-HEROES             STR 02 04 06'.
+             10 FILLER                            PIC X(39) VALUE
+                '09 ORIGINAL AVENGERS       MAS 03 06 10'.
+             10 FILLER                            PIC X(39) VALUE
+                '10 MIDNIGHT SONS           MAS 03 06 10'.
+             10 FILLER                            PIC X(39) VALUE
+                '11 WEB WARRIORS            RES 02 04 08'.
+             10 FILLER                            PIC X(39) VALUE
+                '12 THE CREW                RES 03 06 10'.
+             10 FILLER                            PIC X(39) VALUE
+                '13 MARVEL ROYALTY          ENE 02 04 06'.
+             10 FILLER                            PIC X(39) VALUE
+                '14 GODS & DEMONS           VIT 02 04 08'.
+             10 FILLER                            PIC X(39) VALUE
+                '15 GENERATIONS             DUR 02 04 07'.
+             10 FILLER                            PIC X(39) VALUE
+                '16 HEAVY HITTERS           STR 02 04 07'.
+             10 FILLER                            PIC X(39) VALUE
+                '17 AGILE FIGHTERS          MAS 01 02 04'.
+             10 FILLER                            PIC X(39) VALUE
+                '18 ULTIMATE ALLIANCE 3     VIT 01 02 04'.
+             10 FILLER                            PIC X(39) VALUE
+                '19 AVENGERS                ENE 01 02 04'.
+             10 FILLER                            PIC X(39) VALUE
+                '20 X-FORCE                 VIT 02 04 08'.
+             10 FILLER                            PIC X(39) VALUE
+                '21 WOMEN OF MARVEL         ENE 01 02 04'.
+             10 FILLER                            PIC X(39) VALUE
+                '22 FAMILY VALUES           DUR 03 06 10'.
+             10 FILLER                            PIC X(39) VALUE
+                '23 PARTNERS                ENE 02 04 07'.
+             10 FILLER                            PIC X(39) VALUE
+                '24 BACK IN BLACK           RES 03 06 10'.
+             10 FILLER                            PIC X(39) VALUE
+                '25 MARTIAL ARTISTS         STR 02 04 07'.
+             10 FILLER                            PIC X(39) VALUE
+                '26 FORCES OF NATURE        MAS 03 06 10'.
+             10 FILLER                            PIC X(39) VALUE
+                '27 CUTTING EDGE            STR 02 04 06'.
+             10 FILLER                            PIC X(39) VALUE
+                '28 BIG BRAINS              RES 02 04 07'.
+             10 FILLER                            PIC X(39) VALUE
+                '29 WISECRACKING WARRIORS   ENE 02 04 08'.
+             10 FILLER                            PIC X(39) VALUE
+                '30 TEAM LEADERS            ENE 02 04 06'.
+             10 FILLER                            PIC X(39) VALUE
+                '31 ALL-NEW X-MEN           STR 02 04 08'.
+             10 FILLER                            PIC X(39) VALUE
+                '32 SHARP SHOOTERS          MAS 02 04 08'.
+             10 FILLER                            PIC X(39) VALUE
+                '33 HEAVY METAL             DUR 02 04 08'.
+
+          05 WS-TEAM-BONUS-DATA-TABLE REDEFINES WS-TEAM-BONUS-METADATA.
+             10 WS-TEAM-BONUS-DATA-ROW OCCURS 33 TIMES.
+                15 WS-TEAM-BONUS-ID               PIC 9(02).
+                15 FILLER                         PIC X(01).
+                15 WS-TEAM-BONUS-NAME             PIC X(23).
+                15 FILLER                         PIC X(01).
+                15 WS-TEAM-BONUS-STAT             PIC X(03).
+                   88 WS-TEAM-BONUS-STAT-STR       VALUE 'STR'.
+                   88 WS-TEAM-BONUS-STAT-DUR       VALUE 'DUR'.
+                   88 WS-TEAM-BONUS-STAT-MAS       VALUE 'MAS'.
+                   88 WS-TEAM-BONUS-STAT-RES       VALUE 'RES'.
+                   88 WS-TEAM-BONUS-STAT-VIT       VALUE 'VIT'.
+                   88 WS-TEAM-BONUS-STAT-ENE       VALUE 'ENE'.
+                15 WS-FILLER                      PIC X(01).
+                15 WS-TEAM-BONUS-2-MAN-STAT-BONUS PIC 9(02).
+                15 WS-FILLER                      PIC X(01).
+                15 WS-TEAM-BONUS-3-MAN-STAT-BONUS PIC 9(02).
+                15 WS-FILLER                      PIC X(01).
+                15 WS-TEAM-BONUS-4-MAN-STAT-BONUS PIC 9(02).
+
+          05 WS-HERO-METADATA.
+             10 FILLER                            PIC X(45) VALUE
+                '01 Black Panther   12 13 17 19 24 27 28 00 00'.
+             10 FILLER                            PIC X(45) VALUE
+                '02 Black Widow     03 04 11 17 19 21 23 24 32'.
+             10 FILLER                            PIC X(45) VALUE
+                '03 Captain America 04 15 19 23 30 00 00 00 00'.
+             10 FILLER                            PIC X(45) VALUE
+                '04 Captain Marvel  02 15 19 21 30 00 00 00 00'.
+             10 FILLER                            PIC X(45) VALUE
+                '05 Crystal         13 18 19 21 26 00 00 00 00'.
+             10 FILLER                            PIC X(45) VALUE
+                '06 Daredevil       01 07 17 25 30 00 00 00 00'.
+             10 FILLER                            PIC X(45) VALUE
+                '07 Deadpool        05 06 08 20 27 29 00 00 00'.
+             10 FILLER                            PIC X(45) VALUE
+                '08 Doctor Strange  01 07 10 28 30 00 00 00 00'.
+             10 FILLER                            PIC X(45) VALUE
+                '09 Drax            02 16 18 27 00 00 00 00 00'.
+             10 FILLER                            PIC X(45) VALUE
+                '10 Elektra         03 04 07 08 17 21 25 27 00'.
+             10 FILLER                            PIC X(45) VALUE
+                '11 Elsa Bloodstone 03 08 10 18 21 29 32 00 00'.
+             10 FILLER                            PIC X(45) VALUE
+                '12 Falcon          12 15 18 19 23 00 00 00 00'.
+             10 FILLER                            PIC X(45) VALUE
+                '13 Gamora          02 03 17 18 21 22 25 27 00'.
+             10 FILLER                            PIC X(45) VALUE
+                '14 Ghostrider      08 10 14 24 00 00 00 00 00'.
+             10 FILLER                            PIC X(45) VALUE
+                '15 Groot           02 13 18 23 29 00 00 00 00'.
+             10 FILLER                            PIC X(45) VALUE
+                '16 Hawkeye         04 17 19 23 32 00 00 00 00'.
+             10 FILLER                            PIC X(45) VALUE
+                '17 Hulk            07 09 16 19 28 00 00 00 00'.
+             10 FILLER                            PIC X(45) VALUE
+                '18 Iron Fist       01 07 17 25 00 00 00 00 00'.
+             10 FILLER                            PIC X(45) VALUE
+                '19 Iron Man        04 09 19 28 32 33 00 00 00'.
+             10 FILLER                            PIC X(45) VALUE
+                '20 Luke Cage       01 07 12 16 00 00 00 00 00'.
+             10 FILLER                            PIC X(45) VALUE
+                '21 Miles Morales   11 15 17 18 00 00 00 00 00'.
+             10 FILLER                            PIC X(45) VALUE
+                '22 Ms. Marvel      15 16 21 28 00 00 00 00 00'.
+             10 FILLER                            PIC X(45) VALUE
+                '23 Nightcrawler    05 17 20 27 31 00 00 00 00'.
+             10 FILLER                            PIC X(45) VALUE
+                '24 Psylock         03 05 20 21 25 27 00 00 00'.
+             10 FILLER                            PIC X(45) VALUE
+                '25 Scarlet Witch   10 18 19 21 00 00 00 00 00'.
+             10 FILLER                            PIC X(45) VALUE
+                '26 Spider-Gwen     11 17 18 21 00 00 00 00 00'.
+             10 FILLER                            PIC X(45) VALUE
+                '27 Spider-Man      01 11 15 17 28 29 00 00 00'.
+             10 FILLER                            PIC X(45) VALUE
+                '28 Star-Lord       02 13 18 26 29 30 00 00 00'.
+             10 FILLER                            PIC X(45) VALUE
+                '29 Storm           05 12 13 14 20 21 26 00 00'.
+             10 FILLER                            PIC X(45) VALUE
+                '30 Thor            09 13 14 16 19 22 00 00 00'.
+             10 FILLER                            PIC X(45) VALUE
+                '31 Venom           06 08 11 16 23 24 00 00 00'.
+             10 FILLER                            PIC X(45) VALUE
+                '32 Wasp            09 18 19 21 00 00 00 00 00'.
+             10 FILLER                            PIC X(45) VALUE
+                '33 Wolverine       01 04 05 08 20 25 27 31 33'.
+             10 FILLER                            PIC X(45) VALUE
+                '34 Magneto         05 06 08 26 33 00 00 00 00'.
+             10 FILLER                            PIC X(45) VALUE
+                '35 Loki            06 13 14 22 00 00 00 00 00'.
+             10 FILLER                            PIC X(45) VALUE
+                '36 Thanos          06 14 18 22 00 00 00 00 00'.
+             10 FILLER                            PIC X(45) VALUE
+                '37 Cyclops         05 30 31 32 00 00 00 00 00'.
+             10 FILLER                            PIC X(45) VALUE
+                '38 Colossus        05 16 31 33 00 00 00 00 00'.
+
+          05 WS-HERO-DATA-TABLE REDEFINES WS-HERO-METADATA.
+             10 WS-HERO-DATA-ROW OCCURS 38 TIMES.
+                15 WS-HERO-ID                    PIC 9(02).
+                15 FILLER                        PIC X(01).
+                15 WS-HERO-NAME                  PIC X(15).
+                15 FILLER                   OCCURS 9 TIMES.
+                   20 FILLER                     PIC X(01).
+                   20 WS-HERO-TEAM-BONUS-ID      PIC 9(02).
+                      88 WS-HERO-TEAM-BONUS-NIL   VALUE 00.
+
+       PROCEDURE DIVISION.
+      *===================
+
+       MAINLINE.
+      *---------
+
+           OPEN OUTPUT OUTPUT-FILE
+
+           PERFORM A0000-CALCULATE-BONUSES
+      *    PERFORM B0000-DISP-HERO-TEAM-RELATION
+
+           DISPLAY "TOTAL LOOPS: "
+                   WS-TOTAL-LOOPS
+
+           CLOSE OUTPUT-FILE
+
+           STOP RUN
+           .
+
+       A0000-CALCULATE-BONUSES.
+      *------------------------
+
+           MOVE 0 TO WS-TOTAL-LOOPS
+
+           PERFORM VARYING WS-IDX1 FROM 1 BY 1
+           UNTIL WS-IDX1 > (LENGTH OF WS-HERO-DATA-TABLE /
+                            LENGTH OF WS-HERO-DATA-ROW(1)) - 3
+
+              ADD 1 TO WS-IDX1 GIVING WS-IDX2
+
+              PERFORM VARYING WS-IDX2 FROM WS-IDX2 BY 1
+              UNTIL WS-IDX2  > (LENGTH OF WS-HERO-DATA-TABLE /
+                                LENGTH OF WS-HERO-DATA-ROW(1)) - 2
+
+                 ADD 1 TO WS-IDX2 GIVING WS-IDX3
+
+                 PERFORM VARYING WS-IDX3 FROM WS-IDX3 BY 1
+                 UNTIL WS-IDX3 > (LENGTH OF WS-HERO-DATA-TABLE /
+                                  LENGTH OF WS-HERO-DATA-ROW(1)) - 1
+
+                    ADD 1 TO WS-IDX3 GIVING WS-IDX4
+
+                    PERFORM VARYING WS-IDX4 FROM WS-IDX4 BY 1
+                    UNTIL WS-IDX4 > (LENGTH OF WS-HERO-DATA-TABLE /
+                                     LENGTH OF WS-HERO-DATA-ROW(1))
+
+                       INITIALIZE WS-TEAM-COMPOSITION
+                       ADD 1 TO WS-TOTAL-LOOPS
+
+                       MOVE WS-IDX1 TO WS-HERO-IDX
+                       PERFORM A1000-FIND-BONUS-PAIRS
+
+                       MOVE WS-IDX2 TO WS-HERO-IDX
+                       PERFORM A1000-FIND-BONUS-PAIRS
+
+                       MOVE WS-IDX3 TO WS-HERO-IDX
+                       PERFORM A1000-FIND-BONUS-PAIRS
+
+                       MOVE WS-IDX4 TO WS-HERO-IDX
+                       PERFORM A1000-FIND-BONUS-PAIRS
+
+                       PERFORM A2000-ADD-UP-BONUSES
+                       PERFORM A3000-TALLY-RESULTS
+                       PERFORM A4000-DISPLAY-TOTAL
+                    END-PERFORM
+                 END-PERFORM
+              END-PERFORM
+           END-PERFORM
+           .
+
+       A1000-FIND-BONUS-PAIRS.
+      *-----------------------
+
+           PERFORM VARYING WS-HERO-BONUS-IDX FROM 1 BY 1
+           UNTIL WS-HERO-BONUS-IDX > 9
+           OR    WS-HERO-TEAM-BONUS-NIL (WS-HERO-IDX, WS-HERO-BONUS-IDX)
+              MOVE WS-HERO-TEAM-BONUS-ID
+                   (WS-HERO-IDX, WS-HERO-BONUS-IDX)
+              TO   WS-TEAM-IDX
+
+              ADD 1 TO WS-TEAM-BONUS-PAIR-COUNT (WS-TEAM-IDX)
+           END-PERFORM
+           .
+
+       A2000-ADD-UP-BONUSES.
+      *---------------------
+
+           PERFORM VARYING WS-TEAM-IDX FROM 1 BY 1
+           UNTIL WS-TEAM-IDX > (LENGTH OF WS-TEAM-BONUS-DATA-TABLE /
+                                LENGTH OF WS-TEAM-BONUS-DATA-ROW(1))
+              EVALUATE TRUE
+              WHEN WS-TEAM-BONUS-2-PAIR (WS-TEAM-IDX)
+                   PERFORM A2100-CALCULATE-2-PAIR-BONUS
+
+              WHEN WS-TEAM-BONUS-3-PAIR (WS-TEAM-IDX)
+                   PERFORM A2200-CALCULATE-3-PAIR-BONUS
+
+              WHEN WS-TEAM-BONUS-4-PAIR (WS-TEAM-IDX)
+                   PERFORM A2300-CALCULATE-4-PAIR-BONUS
+
+              END-EVALUATE
+           END-PERFORM
+           .
+
+       A2100-CALCULATE-2-PAIR-BONUS.
+      *-----------------------------
+
+           EVALUATE TRUE
+           WHEN WS-TEAM-BONUS-STAT-STR (WS-TEAM-IDX)
+                ADD WS-TEAM-BONUS-2-MAN-STAT-BONUS (WS-TEAM-IDX)
+                TO  WS-TEAM-STR-BONUS
+
+           WHEN WS-TEAM-BONUS-STAT-DUR (WS-TEAM-IDX)
+                ADD WS-TEAM-BONUS-2-MAN-STAT-BONUS (WS-TEAM-IDX)
+                TO  WS-TEAM-DUR-BONUS
+
+           WHEN WS-TEAM-BONUS-STAT-MAS (WS-TEAM-IDX)
+                ADD WS-TEAM-BONUS-2-MAN-STAT-BONUS (WS-TEAM-IDX)
+                TO  WS-TEAM-MAS-BONUS
+
+           WHEN WS-TEAM-BONUS-STAT-RES (WS-TEAM-IDX)
+                ADD WS-TEAM-BONUS-2-MAN-STAT-BONUS (WS-TEAM-IDX)
+                TO  WS-TEAM-RES-BONUS
+
+           WHEN WS-TEAM-BONUS-STAT-VIT (WS-TEAM-IDX)
+                ADD WS-TEAM-BONUS-2-MAN-STAT-BONUS (WS-TEAM-IDX)
+                TO  WS-TEAM-VIT-BONUS
+
+           WHEN WS-TEAM-BONUS-STAT-ENE (WS-TEAM-IDX)
+                ADD WS-TEAM-BONUS-2-MAN-STAT-BONUS (WS-TEAM-IDX)
+                TO  WS-TEAM-ENE-BONUS
+
+           END-EVALUATE
+           .
+
+       A2200-CALCULATE-3-PAIR-BONUS.
+      *-----------------------------
+
+           EVALUATE TRUE
+           WHEN WS-TEAM-BONUS-STAT-STR (WS-TEAM-IDX)
+                ADD WS-TEAM-BONUS-3-MAN-STAT-BONUS (WS-TEAM-IDX)
+                TO  WS-TEAM-STR-BONUS
+
+           WHEN WS-TEAM-BONUS-STAT-DUR (WS-TEAM-IDX)
+                ADD WS-TEAM-BONUS-3-MAN-STAT-BONUS (WS-TEAM-IDX)
+                TO  WS-TEAM-DUR-BONUS
+
+           WHEN WS-TEAM-BONUS-STAT-MAS (WS-TEAM-IDX)
+                ADD WS-TEAM-BONUS-3-MAN-STAT-BONUS (WS-TEAM-IDX)
+                TO  WS-TEAM-MAS-BONUS
+
+           WHEN WS-TEAM-BONUS-STAT-RES (WS-TEAM-IDX)
+                ADD WS-TEAM-BONUS-3-MAN-STAT-BONUS (WS-TEAM-IDX)
+                TO  WS-TEAM-RES-BONUS
+
+           WHEN WS-TEAM-BONUS-STAT-VIT (WS-TEAM-IDX)
+                ADD WS-TEAM-BONUS-3-MAN-STAT-BONUS (WS-TEAM-IDX)
+                TO  WS-TEAM-VIT-BONUS
+
+           WHEN WS-TEAM-BONUS-STAT-ENE (WS-TEAM-IDX)
+                ADD WS-TEAM-BONUS-3-MAN-STAT-BONUS (WS-TEAM-IDX)
+                TO  WS-TEAM-ENE-BONUS
+
+           END-EVALUATE
+           .
+
+       A2300-CALCULATE-4-PAIR-BONUS.
+      *-----------------------------
+
+           EVALUATE TRUE
+           WHEN WS-TEAM-BONUS-STAT-STR (WS-TEAM-IDX)
+                ADD WS-TEAM-BONUS-4-MAN-STAT-BONUS (WS-TEAM-IDX)
+                TO  WS-TEAM-STR-BONUS
+
+           WHEN WS-TEAM-BONUS-STAT-DUR (WS-TEAM-IDX)
+                ADD WS-TEAM-BONUS-4-MAN-STAT-BONUS (WS-TEAM-IDX)
+                TO  WS-TEAM-DUR-BONUS
+
+           WHEN WS-TEAM-BONUS-STAT-MAS (WS-TEAM-IDX)
+                ADD WS-TEAM-BONUS-4-MAN-STAT-BONUS (WS-TEAM-IDX)
+                TO  WS-TEAM-MAS-BONUS
+
+           WHEN WS-TEAM-BONUS-STAT-RES (WS-TEAM-IDX)
+                ADD WS-TEAM-BONUS-4-MAN-STAT-BONUS (WS-TEAM-IDX)
+                TO  WS-TEAM-RES-BONUS
+
+           WHEN WS-TEAM-BONUS-STAT-VIT (WS-TEAM-IDX)
+                ADD WS-TEAM-BONUS-4-MAN-STAT-BONUS (WS-TEAM-IDX)
+                TO  WS-TEAM-VIT-BONUS
+
+           WHEN WS-TEAM-BONUS-STAT-ENE (WS-TEAM-IDX)
+                ADD WS-TEAM-BONUS-4-MAN-STAT-BONUS (WS-TEAM-IDX)
+                TO  WS-TEAM-ENE-BONUS
+
+           END-EVALUATE
+           .
+
+       A3000-TALLY-RESULTS.
+      *--------------------
+
+           COMPUTE WS-TEAM-TOTAL-BONUS =
+                   WS-TEAM-STR-BONUS   +
+                   WS-TEAM-DUR-BONUS   +
+                   WS-TEAM-MAS-BONUS   +
+                   WS-TEAM-RES-BONUS   +
+                   WS-TEAM-VIT-BONUS   +
+                   WS-TEAM-ENE-BONUS
+           .
+
+       A4000-DISPLAY-TOTAL.
+      *--------------------
+
+           MOVE SPACES TO OUT-RECORD
+
+           MOVE WS-HERO-NAME (WS-IDX1) TO OUT-HERO-1-NAME
+           MOVE WS-HERO-NAME (WS-IDX2) TO OUT-HERO-2-NAME
+           MOVE WS-HERO-NAME (WS-IDX3) TO OUT-HERO-3-NAME
+           MOVE WS-HERO-NAME (WS-IDX4) TO OUT-HERO-4-NAME
+           MOVE WS-TEAM-STR-BONUS      TO OUT-TEAM-STR-BONUS
+           MOVE WS-TEAM-DUR-BONUS      TO OUT-TEAM-DUR-BONUS
+           MOVE WS-TEAM-MAS-BONUS      TO OUT-TEAM-MAS-BONUS
+           MOVE WS-TEAM-RES-BONUS      TO OUT-TEAM-RES-BONUS
+           MOVE WS-TEAM-VIT-BONUS      TO OUT-TEAM-VIT-BONUS
+           MOVE WS-TEAM-ENE-BONUS      TO OUT-TEAM-ENE-BONUS
+           MOVE WS-TEAM-TOTAL-BONUS    TO OUT-TEAM-TOTAL-BONUS
+
+           WRITE OUT-RECORD
+           .
+
+       B0000-DISP-HERO-TEAM-RELATION.
+      *------------------------------
+
+           PERFORM VARYING WS-IDX1 FROM 1 BY 1
+           UNTIL WS-IDX1 > (LENGTH OF WS-HERO-DATA-TABLE /
+                            LENGTH OF WS-HERO-DATA-ROW(1))
+              DISPLAY "========================="
+              DISPLAY " " WS-HERO-NAME (WS-IDX1)
+              DISPLAY "----------------------"
+
+              PERFORM VARYING WS-IDX2 FROM 1 BY 1
+              UNTIL WS-IDX2 > 9
+                 MOVE WS-HERO-TEAM-BONUS-ID (WS-IDX1, WS-IDX2)
+                 TO   WS-IDX3
+
+                 DISPLAY "  " WS-TEAM-BONUS-NAME(WS-IDX3)
+              END-PERFORM
+           END-PERFORM
+           .
+
